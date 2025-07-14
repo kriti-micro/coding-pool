@@ -36,7 +36,7 @@ public class ValidAnagram242 {
         }
         int[] count=new int[26];// size 26 (for 'a' to 'z') initialize with 0
         for (int i = 0; i < s.length(); i++) {
-            System.out.println(" char in s : "+s.charAt(i)+" char in t : "+t.charAt(i));
+            System.out.println(" char in s : "+s.charAt(i)+" "+(int)s.charAt(i)+" char in t : "+t.charAt(i) +" "+(int)t.charAt(i));
 
             count[s.charAt(i)-'a']++;
             count[t.charAt(i)-'a']--;
