@@ -86,7 +86,7 @@ public class FindSecondHighest {
                 .limit(1)
                 .forEach(e->System.out.println(e.getKey()+"="+e.getValue()));
 
-        //to find the second highest freq character
+        //to find the second highest freq character - Compact Code
         String input="Hello @little Babyyy!";
         Map<Character,Long> freqMap=input.toLowerCase()
                 .chars()

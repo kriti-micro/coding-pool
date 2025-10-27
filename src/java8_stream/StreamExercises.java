@@ -145,9 +145,16 @@ public class StreamExercises {
         //Ex7 groupingByName
         System.out.println("groupingByName : ");
         Map<String,List<Employee>> map=employeesList.stream().collect(Collectors.groupingBy(Employee::getName));
-        map.forEach((empl,employeeList)->System.out.println(empl+""+employeeList));
+        map.forEach((empl,employeeList)->System.out.println(empl+" "+employeeList));
         //or we can display like below
         map.entrySet().stream().forEach(e->System.out.println(e.getKey()+" "+e.getValue()));
+
+        //Basic Exaple of streams
+        Integer sum=IntStream.range(1,11).sum();
+        System.out.println("Sum from 1 to 10 using stream is : "+sum);
+
+        IntStream.rangeClosed(1,4).mapToObj(i->"*".repeat(i))//convert int to String (primitive element to Object)
+                .forEach(System.out::println);
 
     }
 
