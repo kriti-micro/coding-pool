@@ -22,6 +22,11 @@ public class FirstNonRepeatingCharacter {
                 .sorted(Map.Entry.comparingByValue()) //Need to take care of sorting
                 .limit(1)
                 .findFirst().get();
+
+        //AlternateWay
+        Character firstNonRepeatedChar = map.entrySet().stream().filter(e->e.getValue()==1).findFirst().get().getKey();
+        System.out.println("alternate way to find non repeated char : "+firstNonRepeatedChar);
+
         return entry.getKey();
     }
 
