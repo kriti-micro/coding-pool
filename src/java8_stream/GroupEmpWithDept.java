@@ -27,6 +27,7 @@ public class GroupEmpWithDept {
                 Collectors.groupingBy(EmployeeWithDept::getDept,
                 Collectors.groupingBy(EmployeeWithDept::getGender,Collectors.counting())));
 
+        System.out.println(map);
         // Print Result
         map.forEach((dept,genderMap)->{
             System.out.println("Dept : "+dept);

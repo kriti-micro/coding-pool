@@ -1,4 +1,4 @@
-package practise;
+package dsa.arrays;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -10,6 +10,7 @@ public class L1_TwoSum {
 
                 for(int i=0;i<arr.length;i++){
                     int diff=target-arr[i];
+                    System.out.println("Map present in : "+map);
                     if(map.containsKey(diff)){
                         return new int[]{map.get(diff),i};
                     }

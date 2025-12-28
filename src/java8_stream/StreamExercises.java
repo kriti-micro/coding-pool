@@ -136,7 +136,11 @@ public class StreamExercises {
         Employee highPaidEmp=employeesList.stream()
                 .sorted(Comparator.comparing(Employee::getAge,Comparator.reverseOrder()))
                 .limit(1).findAny().get();
-        System.out.println(highPaidEmp);
+        System.out.println("High Age Employee : "+highPaidEmp);
+
+        //or
+
+        employeesList.stream().max(Comparator.comparing(Employee::getAge)).ifPresent(System.out::println);
 
         //Ex6 Joining
         String empStr=employeesList.stream().map(e->e.getName()).collect(Collectors.joining(","));
@@ -153,8 +157,13 @@ public class StreamExercises {
         Integer sum=IntStream.range(1,11).sum();
         System.out.println("Sum from 1 to 10 using stream is : "+sum);
 
-        IntStream.rangeClosed(1,4).mapToObj(i->"*".repeat(i))//convert int to String (primitive element to Object)
+        System.out.println("Pyramid using method Ref : ");
+        IntStream.rangeClosed(1,4).mapToObj("*"::repeat)//convert int to String (primitive element to Object)
                 .forEach(System.out::println);
+
+        //or
+        System.out.println("Pyramid using lambda expression : ");
+        IntStream.rangeClosed(1,6).mapToObj(i->"*".repeat(i)).forEach(System.out::println);
 
     }
 
