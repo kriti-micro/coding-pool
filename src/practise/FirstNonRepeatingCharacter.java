@@ -1,6 +1,7 @@
 package practise;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -17,6 +18,7 @@ public class FirstNonRepeatingCharacter {
                         Collectors.counting()
                         ));
         System.out.println(map);
+        //O(nlogn)
         Map.Entry<Character,Long> entry=map.entrySet()
                 .stream()
                 .sorted(Map.Entry.comparingByValue()) //Need to take care of sorting
@@ -27,6 +29,8 @@ public class FirstNonRepeatingCharacter {
         Character firstNonRepeatedChar = map.entrySet().stream().filter(e->e.getValue()==1).findFirst().get().getKey();
         System.out.println("alternate way to find non repeated char : "+firstNonRepeatedChar);
 
+        //O(n)
+        map.entrySet().stream().min(Map.Entry.comparingByValue()).ifPresent(e->System.out.println("Using min value : "+e.getKey()));
         return entry.getKey();
     }
 

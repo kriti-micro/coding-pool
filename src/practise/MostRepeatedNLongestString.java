@@ -32,5 +32,11 @@ public class MostRepeatedNLongestString {
 
         System.out.println("mostRepeatedElement = longestElementAlternative ? " + mostRepeatedElement.equals(longestElementAlternative));
 
+
+        //Easiest way: fast without sorted O(n) -Also use ifPresent/ orElse('N/A') instead of get()
+        String s1=list.stream().collect(Collectors.groupingBy(Function.identity(),Collectors.counting())).entrySet().stream().max(Map.Entry.comparingByValue()).get().getKey();
+        String s2=list.stream().collect(Collectors.groupingBy(Function.identity(),Collectors.summingInt(s->s.length()))).entrySet().stream().max(Map.Entry.comparingByValue()).get().getKey();
+        System.out.println(" The most repeated and longest "+s1+" "+s2+" compare "+s1.equals(s2));
+
     }
 }
