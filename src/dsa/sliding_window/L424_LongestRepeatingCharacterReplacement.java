@@ -1,4 +1,4 @@
-package dsa.arrays.sliding_window;
+package dsa.sliding_window;
 
 import java.util.Arrays;
 

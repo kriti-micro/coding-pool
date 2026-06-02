@@ -1,7 +1,6 @@
 package dsa.arrays;
 
 import java.util.Arrays;
-import java.util.HashSet;
 
 public class L238_ProductExceptSelf {
     //complexity=O(2n) ,space=O(1) no extra var required excluding i/p n o/p arr

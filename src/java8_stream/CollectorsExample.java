@@ -5,6 +5,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class CollectorsExample {
+
+      /**
+            | Requirement    | Method                   |
+            | -------------- | ------------------------ |
+            | Filter data    | `filter()`               |
+            | Transform data | `map()`                  |
+            | Sort data      | `sorted()`               |
+            | Group data     | `groupingBy()`           |
+            | Final result   | `collect()` / `toList()` |
+       **/
+
     public static void main(String[] args) {
         // Accumulate names into a List
         //List<String> list = people.stream().map(Person::getName) .collect(Collectors.toList());
