@@ -20,10 +20,16 @@ public class StringRelatedJava8questions {
         firstDuplicateCharacter();
         System.out.println("------6. Reverse each word in a sentence called : -----------");
         reverseEachWordInSentence();
+        reverseEachWordUsingCollections();
+        reverseEachWordUsingReduce();
         System.out.println("------7. Check anagram : -----------");
         checkAnagram();
+        checkAnagramUsingArraysStreamApproach();
+        checkAnagramUsing26IntArr();
+        groupAnagramWords();
         System.out.println("------8. Check Palindrome : -----------");
         checkPalindrome();
+        checkPalindrome1();
         System.out.println("-----9.  Sort words by length-------");
         sortWordsByLength();
         System.out.println("-----10.  Find the longest word-------");
@@ -52,9 +58,25 @@ public class StringRelatedJava8questions {
         filterWordsLongerThan5Char();
         System.out.println("-----22. Avg Word Length-------");
         avgWordLength();
+        System.out.println("-----23. roman to integer-------");
+        romanToInteger();
 
 
 
+    }
+
+    private static void romanToInteger() {
+        String s="MCMXCIV";
+        int result=0;
+        Map<Character,Integer> hmap=Map.of('I',1,'V',5,'X',10,'L',50,'C',100,'D',500,'M',1000);
+        for(int i =0;i<s.length();i++){
+            int curr=hmap.get(s.charAt(i));
+            int next=i+1<s.length()?hmap.get(s.charAt(i+1)):0;
+            result += (curr < next) ? -curr : curr;
+        }
+        System.out.println("The roman to integer is "+result);
+        // romanToInt("XIV") → 14
+        // romanToInt("MCMXCIV") → 1994
     }
 
     private static void avgWordLength() {
@@ -87,6 +109,17 @@ public class StringRelatedJava8questions {
         String s = "hello hi heat apple bat";
         Map<Character,List<String>> map=Arrays.stream(s.split(" ")).collect(Collectors.groupingBy(w->w.charAt(0)));
         System.out.println(" Group words by starting letter : "+map);
+
+        /**
+         * We can replace List<Character> to wildcard ? & o/p for below is {r=[r], s=[s], t=[t], g=[g], h=[h], i=[i, i, i], k=[k], n=[n]}
+         * Map<Character, List<Character>> freqChar = "Kriti Singh".toLowerCase()
+         *                 .replace(" ", "")
+         *                 .chars()
+         *                 .mapToObj(c -> (char) c)
+         *                 .collect(Collectors.groupingBy(Function.identity()));
+         *
+         *         System.out.println(freqChar);
+         */
     }
 
     private static void top3MostFreqWords() {
@@ -164,6 +197,13 @@ public class StringRelatedJava8questions {
         IntStream.rangeClosed(0,s.length()/2).forEach(i->System.out.println("Using rangeClosed : "+s.toLowerCase().charAt(i) + " " +(s.toLowerCase().charAt(s.length()-1-i))));
     }
 
+    private static void checkPalindrome1() {
+        String s="A man, a plan, a canal: Panama";
+        String clean = s.replaceAll("[^a-zA-Z0-9]","").toLowerCase();
+        boolean result = IntStream.range(0,clean.length()/2).allMatch(i->s.charAt(i)==(s.charAt(s.length()-1-i)));
+        System.out.println(" The String "+s+" is palindrome using range[2nd param not included] n String method : "+result);
+        }
+
     private static void checkAnagram() {
         String a="listen";
         String b="silent";
@@ -182,10 +222,79 @@ public class StringRelatedJava8questions {
         System.out.println("Printing list for test : "+a.toLowerCase().chars().mapToObj(c->c).sorted().collect(Collectors.toList()));
     }
 
+    public static void checkAnagramUsingArraysStreamApproach(){
+        String a="listen";
+        String b="silent";
+
+        boolean result = Arrays.equals(a.chars().sorted().toArray(),b.chars().sorted().toArray()); //.toArray method used
+        System.out.println(" The word a  "+a+" and b "+b+" is anagram  : "+result);
+    }
+
+    public static void checkAnagramUsing26IntArr(){
+        String a="listen";
+        String b="silent";
+        boolean s=true;
+
+        if(a.length()!=b.length())s=false;
+        int[] fre=new int[26];
+        for(char c:a.toCharArray())fre[c-'a']++;
+        for(char c:b.toCharArray())fre[c-'a']--;
+
+        for(int i=0;i<26;i++){
+            if(fre[i]!=0){
+                s=false;
+                break;
+            }
+        }
+        System.out.println(" is anagram : "+s);
+    }
+
+    public static void groupAnagramWords(){
+
+        List<String> arr=List.of("eat","tea","tan","ate","nat","bat");
+        Map<String,List<String>> map = arr.stream().collect(Collectors.groupingBy(
+                w->{
+                    char[] ch= w.toLowerCase().toCharArray();
+                    Arrays.sort(ch);
+                    return String.valueOf(ch);
+                }
+        ));
+        System.out.println(" The group anagram words : "+map);
+
+        //groupingBy() takes each stream element, applies your classifier function to produce a key, finds or creates the List associated with that key, and adds the original element to that list.
+        /* *
+         Map<String, List<String>> result = new HashMap<>();
+          for (String word : words) {
+            String key = getSortedKey(word);
+            result
+                .computeIfAbsent(key, k -> new ArrayList<>())
+                .add(word);
+           }
+        * */
+    }
+
     private static void reverseEachWordInSentence() {
         String sentence="Hello world";
         String result=Arrays.stream(sentence.split(" ")).map(s->new StringBuilder(s).reverse().toString()).collect(Collectors.joining(" "));
         System.out.println(" The reverse of each word in sentence "+sentence+" is "+result);
+    }
+
+    private static void reverseEachWordUsingCollections(){
+        String sentence="Hello Java World";
+        String result = Arrays.stream(sentence.split(" ")).collect(Collectors.collectingAndThen(
+                Collectors.toList(),
+                list->{
+                    Collections.reverse(list);
+                    return String.join(" ",list);
+                }
+        ));
+        System.out.println(" The reverse of only sentence "+sentence+" is "+result);
+    }
+
+    private static void reverseEachWordUsingReduce(){
+        String sentence="Hello Java World";
+        String result = Arrays.stream(sentence.split(" ")).reduce("",(a,b)->b+" "+a);
+        System.out.println(" The reverse of only sentence "+sentence+" is "+result);
     }
 
     private static void firstDuplicateCharacter() {
@@ -229,11 +338,32 @@ public class StringRelatedJava8questions {
                 .collect(Collectors.groupingBy(Function.identity(), LinkedHashMap::new, Collectors.counting()));
 
         System.out.println(" The result is "+map);
+
+        //to des order
+        System.out.println(" To print map in desc order ");
+        map.entrySet()
+                .stream()
+                .sorted( Map.Entry.<Character,Long>comparingByValue().reversed())
+                .forEach(e->System.out.println(e.getKey()+" : "+e.getValue()));
+        /**
+         *
+         * // ❌ Clunky Way (Requires manual types) Compilation error if we revove entrytype during entry comparing
+         * freqChar.entrySet().stream()
+         *     .sorted(Map.Entry.<Character, Long>comparingByValue().reversed())
+         *
+         * //  Modern Clean Way (No manual types needed!)
+         * freqChar.entrySet().stream()
+         *     .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+         *     .forEach(e -> System.out.println(e.getKey() + "= " + e.getValue()));
+         */
         System.out.println(" Alternative way to print map in desc order ");
                         map.entrySet()
                         .stream()
                         .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                         .forEach(e->System.out.println(e.getKey()+" : "+e.getValue()));
+
+
+
     }
 
     public static void countFreqOfEachWord(){
