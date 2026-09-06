@@ -14,6 +14,9 @@ public class L2_LongestSubstringWithoutRepeatingChar {
         for(int right=0;right<word.length();right++){
             Character c=word.charAt(right);
 
+            //If I've seen this character before AND
+            // its previous occurrence is still inside my current window,
+            // move left past that previous occurrence.
             if(map.containsKey(c) && map.get(c)>=left){
                 left=map.get(c)+1;
             }
@@ -45,6 +48,7 @@ public class L2_LongestSubstringWithoutRepeatingChar {
             lastIndex.put(c,right);
             windowLength=right-left+1;
             //Main logic to return String
+            //I just found a bigger substring, so remember its starting position.
             if(windowLength>maxLength){
                 bestStart=left;
             }
