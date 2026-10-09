@@ -1081,6 +1081,678 @@ CompletableFuture<String> future2 = CompletableFuture
         return result;
     });
 ```
+Sure. The easiest way to understand these two is:
+
+* **`exceptionally()` → handle failure and provide a fallback**
+* **`handle()` → handle both success and failure**
+
+Both return another `CompletableFuture`.
+
+---
+
+# 1. First understand `CompletableFuture`
+
+Normally, this is synchronous:
+
+```java
+String result = callExternalApi();
+String processed = processResult(result);
+```
+
+The program waits:
+
+```text
+callExternalApi()
+      ↓
+wait
+      ↓
+processResult()
+      ↓
+result
+```
+
+With:
+
+```java
+CompletableFuture.supplyAsync(...)
+```
+
+the operation can execute asynchronously:
+
+```text
+Main thread
+    │
+    └──────→ CompletableFuture
+                 │
+                 ↓
+          background thread
+                 │
+          callExternalApi()
+```
+
+You immediately get a `CompletableFuture<String>` rather than the final `String`.
+
+---
+
+# 2. Your first example
+
+```java
+CompletableFuture<String> future = CompletableFuture
+    .supplyAsync(() -> callExternalApi())
+    .thenApply(result -> processResult(result))
+    .exceptionally(ex -> {
+        log.error("API call failed", ex);
+        return "default-value";
+    });
+```
+
+Let's break it down.
+
+## Step 1 — `supplyAsync()`
+
+```java
+.supplyAsync(() -> callExternalApi())
+```
+
+This means:
+
+> Run `callExternalApi()` asynchronously and give me its result.
+
+Suppose:
+
+```java
+callExternalApi()
+```
+
+returns:
+
+```text
+"customer-data"
+```
+
+Then the `CompletableFuture` contains:
+
+```text
+"customer-data"
+```
+
+Conceptually:
+
+```text
+CompletableFuture
+       ↓
+"customer-data"
+```
+
+---
+
+# 3. `thenApply()`
+
+Next:
+
+```java
+.thenApply(result -> processResult(result))
+```
+
+`thenApply()` means:
+
+> When the previous operation succeeds, take its result, transform it, and return the transformed result.
+
+Example:
+
+```java
+callExternalApi()
+      ↓
+"customer-data"
+      ↓
+processResult("customer-data")
+      ↓
+"processed-customer-data"
+```
+
+So:
+
+```java
+CompletableFuture<String> future
+```
+
+eventually contains:
+
+```text
+"processed-customer-data"
+```
+
+### Think of `thenApply()` as:
+
+```text
+Input
+ ↓
+transform
+ ↓
+Output
+```
+
+Similar to:
+
+```java
+String result = callExternalApi();
+
+String processed = processResult(result);
+```
+
+except that the operations are chained asynchronously.
+
+---
+
+# 4. What if `callExternalApi()` fails?
+
+Suppose:
+
+```java
+callExternalApi()
+```
+
+throws:
+
+```java
+IOException
+```
+
+Then:
+
+```text
+supplyAsync()
+     ↓
+IOException
+     ↓
+thenApply()
+     ↓
+SKIPPED
+     ↓
+exceptionally()
+```
+
+So this:
+
+```java
+.thenApply(result -> processResult(result))
+```
+
+doesn't execute.
+
+Instead:
+
+```java
+.exceptionally(ex -> {
+    log.error("API call failed", ex);
+    return "default-value";
+})
+```
+
+runs.
+
+---
+
+# 5. What does `exceptionally()` do?
+
+```java
+.exceptionally(ex -> {
+    log.error("API call failed", ex);
+    return "default-value";
+});
+```
+
+It means:
+
+> If something went wrong in the previous CompletableFuture chain, handle the exception and return a replacement value.
+
+For example:
+
+```text
+callExternalApi()
+       ↓
+     FAILED
+       ↓
+exceptionally()
+       ↓
+"default-value"
+```
+
+Therefore:
+
+```java
+future.join()
+```
+
+would return:
+
+```text
+"default-value"
+```
+
+instead of throwing the original exception.
+
+---
+
+# 6. Important: `exceptionally()` is only for failure
+
+For example:
+
+```java
+CompletableFuture
+    .supplyAsync(() -> "Hello")
+    .exceptionally(ex -> "Fallback");
+```
+
+Since `"Hello"` succeeds:
+
+```text
+"Hello"
+   ↓
+exceptionally()
+   ↓
+NOT EXECUTED
+```
+
+Result:
+
+```text
+"Hello"
+```
+
+If the operation fails:
+
+```text
+Exception
+   ↓
+exceptionally()
+   ↓
+"Fallback"
+```
+
+---
+
+# 7. Now your second example
+
+```java
+CompletableFuture<String> future2 = CompletableFuture
+    .supplyAsync(() -> riskyOp())
+    .handle((result, ex) -> {
+        if (ex != null) {
+            log.error("Failed", ex);
+            return "fallback";
+        }
+        return result;
+    });
+```
+
+The important difference is:
+
+```java
+.handle((result, ex) -> ...)
+```
+
+`handle()` receives **both**:
+
+```text
+result
+ex
+```
+
+So it can handle:
+
+```text
+SUCCESS
+   ↓
+result != null
+ex == null
+```
+
+or:
+
+```text
+FAILURE
+   ↓
+result may be null
+ex != null
+```
+
+---
+
+# 8. Successful case with `handle()`
+
+Suppose:
+
+```java
+riskyOp()
+```
+
+returns:
+
+```text
+"ABC"
+```
+
+Then:
+
+```java
+.handle((result, ex) -> {
+    if (ex != null) {
+        ...
+    }
+
+    return result;
+})
+```
+
+gets:
+
+```text
+result = "ABC"
+ex = null
+```
+
+So:
+
+```java
+if (ex != null)
+```
+
+is false.
+
+It executes:
+
+```java
+return result;
+```
+
+Result:
+
+```text
+"ABC"
+```
+
+---
+
+# 9. Failure case with `handle()`
+
+Suppose:
+
+```java
+riskyOp()
+```
+
+throws:
+
+```text
+RuntimeException
+```
+
+Then:
+
+```text
+result = null
+ex = RuntimeException
+```
+
+Conceptually:
+
+```text
+riskyOp()
+   ↓
+Exception
+   ↓
+handle()
+   ↓
+ex != null
+   ↓
+log
+   ↓
+"fallback"
+```
+
+So:
+
+```java
+future2.join()
+```
+
+returns:
+
+```text
+"fallback"
+```
+
+---
+
+# 10. Main difference
+
+This is the most important part for interviews.
+
+### `exceptionally()`
+
+```java
+.exceptionally(ex -> {
+    return "fallback";
+})
+```
+
+Think:
+
+> **"Only tell me what to do if something failed."**
+
+It is primarily an **error recovery/fallback** stage.
+
+---
+
+### `handle()`
+
+```java
+.handle((result, ex) -> {
+    if (ex != null) {
+        return "fallback";
+    }
+
+    return result;
+})
+```
+
+Think:
+
+> **"Give me whatever happened—success or failure—and I'll decide what the next result should be."**
+
+---
+
+# 11. Visual comparison
+
+### `exceptionally()`
+
+```text
+                 ┌── SUCCESS ──→ result
+Previous stage ──┤
+                 └── FAILURE ──→ exceptionally()
+                                      ↓
+                                  fallback
+```
+
+### `handle()`
+
+```text
+                 ┌── SUCCESS ──→ result ──┐
+Previous stage ──┤                         │
+                 └── FAILURE ──→ exception ┤
+                                           ↓
+                                        handle()
+                                           ↓
+                                      new result
+```
+
+---
+
+# 12. Example where `handle()` is useful
+
+Suppose you want to return a response regardless of whether the API succeeds:
+
+```java
+CompletableFuture<String> future =
+    CompletableFuture
+        .supplyAsync(() -> callExternalApi())
+        .handle((result, ex) -> {
+
+            if (ex != null) {
+                log.error("API failed", ex);
+                return "API unavailable";
+            }
+
+            return result;
+        });
+```
+
+Now both paths produce a `String`:
+
+```text
+API succeeds
+    ↓
+actual result
+
+API fails
+    ↓
+"API unavailable"
+```
+
+---
+
+# 13. One subtle but important point
+
+Your first chain has:
+
+```java
+supplyAsync()
+    .thenApply()
+    .exceptionally()
+```
+
+Suppose `processResult()` itself fails:
+
+```java
+callExternalApi()
+      ↓
+SUCCESS
+      ↓
+processResult()
+      ↓
+EXCEPTION
+      ↓
+exceptionally()
+```
+
+`exceptionally()` can handle failures from the previous stages in the chain, not just the API call itself.
+
+So this:
+
+```java
+.exceptionally(ex -> ...)
+```
+
+can act as a recovery point for failures occurring earlier in that chain.
+
+---
+
+# 14. What happens after `exceptionally()`?
+
+This is another interview-friendly point.
+
+```java
+CompletableFuture<String> future =
+    CompletableFuture
+        .supplyAsync(() -> riskyOp())
+        .exceptionally(ex -> "fallback")
+        .thenApply(result -> result.toUpperCase());
+```
+
+If `riskyOp()` fails:
+
+```text
+riskyOp()
+   ↓
+Exception
+   ↓
+exceptionally()
+   ↓
+"fallback"
+   ↓
+thenApply()
+   ↓
+"FALLBACK"
+```
+
+Once `exceptionally()` successfully returns `"fallback"`, the future is considered **successfully recovered**.
+
+---
+
+# 15. `thenApply()` vs `thenAccept()` vs `thenRun()`
+
+Since you're preparing for backend interviews, this is worth remembering:
+
+| Method            |   Receives result? | Returns result? | Purpose                        |
+| ----------------- | -----------------: | --------------: | ------------------------------ |
+| `thenApply()`     |                Yes |             Yes | Transform result               |
+| `thenAccept()`    |                Yes |              No | Consume result                 |
+| `thenRun()`       |                 No |              No | Run something after completion |
+| `exceptionally()` |          Exception |             Yes | Recover from failure           |
+| `handle()`        | Result + exception |             Yes | Handle success/failure         |
+
+Example:
+
+```java
+.thenApply(x -> x.toUpperCase())
+```
+
+```text
+"hello" → "HELLO"
+```
+
+Whereas:
+
+```java
+.thenAccept(x -> log.info(x))
+```
+
+just consumes the value.
+
+And:
+
+```java
+.thenRun(() -> log.info("Done"))
+```
+
+doesn't need the result.
+
+---
+
+## Interview answer
+
+If the interviewer asks:
+
+> **What's the difference between `exceptionally()` and `handle()` in CompletableFuture?**
+
+You can say:
+
+> "`exceptionally()` is invoked when the CompletableFuture completes exceptionally and is typically used to recover by returning a fallback value. `handle()` is invoked for both successful and exceptional completion and receives both the result and the exception, allowing us to transform either outcome into a new result."
+
+The easiest memory trick:
+
+```text
+exceptionally()
+     ↓
+FAILURE only
+
+handle()
+     ↓
+SUCCESS + FAILURE
+```
+
+And in your examples, **both ultimately convert a failed asynchronous operation into a successful future containing a fallback `String`**.
 
 ---
 

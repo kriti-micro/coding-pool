@@ -1,3 +1,56 @@
+# Table of Contents
+
+- [Section 1 : Abstract Class vs Interface in Java](#section-1-abstract-class-vs-interface-in-java)
+    - [Why Does an Abstract Class Have a Constructor?](#why-does-an-abstract-class-have-a-constructor)
+        - [Purpose of Abstract Class Constructors](#purpose-of-abstract-class-constructors)
+- [Purpose of Abstract Classes in Real Projects](#purpose-of-abstract-classes-in-real-projects)
+- [What Is an Interface?](#what-is-an-interface)
+- [Why Were Default Methods Introduced in Java 8?](#why-were-default-methods-introduced-in-java-8)
+- [Default Methods in Interface](#default-methods-in-interface)
+    - [Why Use Default Methods?](#why-use-default-methods)
+    - [Real Example](#real-example)
+- [Static Methods in Interface (Java 8)](#static-methods-in-interface-java-8)
+    - [Why Use Static Methods?](#why-use-static-methods)
+- [Difference Between Default and Static Methods](#difference-between-default-and-static-methods)
+- [Abstract Class vs Interface](#abstract-class-vs-interface)
+- [Spring Boot Real-World Usage](#spring-boot-real-world-usage)
+    - [Interface](#interface)
+- [Interview Answer (Short Version)](#interview-answer-short-version)
+    - [When to Use Abstract Class?](#when-to-use-abstract-class)
+    - [When to Use Interface?](#when-to-use-interface)
+    - [Rule of Thumb](#rule-of-thumb)
+- [Section 2 : Method Hiding in Java](#section-2-method-hiding-in-java)
+    - [Example of Method Hiding](#example-of-method-hiding)
+- [Method Hiding vs Method Overriding](#method-hiding-vs-method-overriding)
+    - [Overriding (Runtime Polymorphism)](#overriding-runtime-polymorphism)
+    - [Hiding (Compile-Time Binding)](#hiding-compile-time-binding)
+- [Why Can't Static Methods Be Overridden?](#why-cant-static-methods-be-overridden)
+- [Real Project Example](#real-project-example)
+- [Interview Question](#interview-question)
+    - [What is Method Hiding?](#what-is-method-hiding)
+    - [Key Difference](#key-difference)
+    - [One-Line Interview Answer](#one-line-interview-answer)
+    - [Note](#note)
+- [Section 3 : Java `static` Keyword: Explanation and Detailed Guide](#section-3-java-static-keyword-explanation-and-detailed-guide)
+    - [Part 1: Original Explanation & Example](#part-1-original-explanation-and-example)
+        - [Core Uses of the `static` Keyword](#core-uses-of-the-static-keyword)
+            - [1. Static Variables (Class Variables)](#1-static-variables-class-variables)
+            - [2. Static Methods (Class Methods)](#2-static-methods-class-methods)
+            - [3. Static Blocks](#3-static-blocks)
+            - [4. Static Nested Classes](#4-static-nested-classes)
+        - [Complete Code Example](#complete-code-example)
+            - [Output:](#output)
+        - [Quick Summary: Static vs. Non-Static](#quick-summary-static-vs-non-static)
+    - [Part 2: Static Nested Classes & Method Polymorphism Rules](#part-2-static-nested-classes-and-method-polymorphism-rules)
+        - [Static Nested Classes vs. Regular Inner Classes](#static-nested-classes-vs-regular-inner-classes)
+            - [Code Example:](#code-example)
+        - [Static Method Overloading and Overriding Rules](#static-method-overloading-and-overriding-rules)
+            - [1. Overloading Static Methods (Allowed ✅)](#1-overloading-static-methods-allowed)
+            - [2. Overriding Static Methods (Not Allowed ❌ — Method Hiding)](#2-overriding-static-methods-not-allowed-method-hiding)
+            - [Code Example:](#code-example-1)
+- [Section 4 : Java difference in PATh n classPath](#section-4-java-difference-in-path-n-classpath)
+
+
 # Section 1 : Abstract Class vs Interface in Java
 
 ## Why Does an Abstract Class Have a Constructor?
@@ -923,3 +976,264 @@ public class Test {
 }
 ```
 
+# Section 4 java difference in path n classpath
+
+In Java, **classpath** means:
+
+> **The list of locations where Java looks for `.class` files and other resources needed by your application.**
+
+Think of it as Java's **"where should I search for classes?" list**.
+
+### Simple example
+
+Suppose you have:
+
+```text
+my-app/
+├── src/
+│   └── Main.java
+└── lib/
+    └── mysql-driver.jar
+```
+
+Your `Main.java` contains:
+
+```java
+import com.mysql.cj.jdbc.Driver;
+```
+
+Java needs to find `Driver.class`.
+
+If `mysql-driver.jar` is not on the classpath, you can get:
+
+```text
+ClassNotFoundException
+```
+
+or during compilation:
+
+```text
+package com.mysql.cj.jdbc does not exist
+```
+
+---
+
+## Classpath has 3 common things
+
+### 1. Compiled classes
+
+For example:
+
+```text
+target/classes/
+```
+
+contains:
+
+```text
+com/example/Service.class
+com/example/Controller.class
+```
+
+This directory can be part of the classpath.
+
+### 2. JAR files
+
+For example:
+
+```text
+mysql-connector-j.jar
+spring-core.jar
+jackson-databind.jar
+```
+
+These can also be on the classpath.
+
+### 3. Resources
+
+For example:
+
+```text
+src/main/resources/
+    application.properties
+    log4j2.xml
+```
+
+These resources are also made available through the classpath.
+
+That's why you commonly see:
+
+```java
+getClass().getClassLoader()
+    .getResourceAsStream("application.properties");
+```
+
+---
+
+# Classpath vs PATH
+
+This is a very common interview question.
+
+### `PATH`
+
+Used by the **operating system** to find executable commands.
+
+For example:
+
+```bash
+java
+mvn
+git
+```
+
+Your OS looks through directories in `PATH`.
+
+### `CLASSPATH`
+
+Used by **Java** to find classes and resources.
+
+```text
+PATH
+ ↓
+Find executable programs
+
+CLASSPATH
+ ↓
+Find Java classes / JARs / resources
+```
+
+---
+
+# In a Maven project
+
+You usually don't manually set the classpath.
+
+For example:
+
+```text
+my-app/
+├── pom.xml
+└── src/
+    └── main/
+        ├── java/
+        └── resources/
+```
+
+When you add:
+
+```xml
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-core</artifactId>
+    <version>...</version>
+</dependency>
+```
+
+Maven downloads the JAR and builds the appropriate classpath for compilation and execution.
+
+So when you run:
+
+```bash
+mvn spring-boot:run
+```
+
+or:
+
+```bash
+java -jar application.jar
+```
+
+the required dependencies are made available to the application.
+
+---
+
+# Why have you probably seen "classpath" in Tomcat?
+
+This is especially relevant to your Java/Tomcat work.
+
+Suppose your application has:
+
+```text
+WEB-INF/
+   classes/
+   lib/
+      database-driver.jar
+      spring.jar
+      ...
+```
+
+The web application's classloader uses these locations to find classes.
+
+Conceptually:
+
+```text
+Web Application
+      │
+      ├── WEB-INF/classes
+      │       ↓
+      │    Your .class files
+      │
+      └── WEB-INF/lib
+              ↓
+           Dependency JARs
+```
+
+So if a JAR is missing from `WEB-INF/lib`, you might see:
+
+```text
+ClassNotFoundException
+```
+
+or:
+
+```text
+NoClassDefFoundError
+```
+
+---
+
+# One important distinction
+
+### `ClassNotFoundException`
+
+Usually means Java tried to load a class **dynamically** and couldn't find it.
+
+Example:
+
+```java
+Class.forName("com.mysql.cj.jdbc.Driver");
+```
+
+### `NoClassDefFoundError`
+
+Usually means the class was expected to be available when the application ran, but the required class definition/dependency wasn't available or couldn't be loaded.
+
+For interviews, remember:
+
+```text
+Classpath
+    ↓
+Where Java searches for classes/resources
+
+Missing dependency
+    ↓
+ClassNotFoundException / NoClassDefFoundError
+```
+
+### Easy analogy
+
+Think of your Java application as a person looking for a book:
+
+```text
+Classpath = list of libraries/shelves to search
+
+JAR = a book/library containing classes
+
+.class = individual book/page Java needs
+
+ClassLoader = person searching for it
+```
+
+So:
+
+> **Classpath tells the ClassLoader where it can find the classes and resources required by the application.**
